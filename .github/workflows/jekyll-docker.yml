@@ -1,32 +1,29 @@
 name: Deploy to GitHub Pages
+
 on:
   push:
     branches:
       - main
 
-# grant the workflow the permissions it needs to publish
 permissions:
-  pages: write
   contents: read
+  pages: write
+  id-token: write   # required for deploy-pages
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Prepare public directory (copy top-level items)
+      - name: Prepare public directory
         run: |
           set -euo pipefail
-          echo "Working directory: $(pwd)"
-          echo "Repo contents:"
-          ls -la
-
           rm -rf public || true
           mkdir public
 
-          # Copy top-level items except public, .git, and .github
           shopt -s dotglob nullglob
           for item in ./*; do
             name=$(basename "$item")
@@ -39,10 +36,13 @@ jobs:
           echo "public contents:"
           ls -la public
 
-      - name: Upload artifact for GitHub Pages
-        uses: actions/upload-pages-artifact@v1
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: public
 
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
