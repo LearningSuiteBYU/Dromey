@@ -1,8 +1,4 @@
-name: Deploy to GitHub Pages
-on:
-  push:
-    branches: [ main ]
-
+# Minimal skeleton for artifact flow (only if Pages enabled)
 permissions:
   pages: write
   contents: read
@@ -12,43 +8,16 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Prepare public directory (publish vocal_sound_source as root)
-        run: |
-          set -euo pipefail
+      - uses: actions/checkout@v4
+      - run: | 
+          # build or copy into public
           rm -rf public || true
           mkdir public
-
-          # If your playable site files live in vocal_sound_source/, copy them into public root:
-          if [ -d "vocal_sound_source" ]; then
-            cp -r vocal_sound_source/* public/
-          else
-            # fallback: copy top-level items as before
-            shopt -s dotglob nullglob
-            for item in ./*; do
-              name=$(basename "$item")
-              if [[ "$name" == "public" || "$name" == ".git" || "$name" == ".github" ]]; then
-                continue
-              fi
-              cp -r "$item" public/
-            done
-          fi
-
-          echo "public contents:"
-          ls -la public
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+          cp -r vocal_sound_source/* public/
+      - uses: actions/configure-pages@v4
         with:
-          # optionally allow enablement in orgs that require explicit enablement
           enablement: all
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v1    # use the Pages artifact action version recommended in docs
         with:
           path: public
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v4
