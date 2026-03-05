@@ -12,17 +12,40 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    # <-- THIS IS THE CRITICAL LINE the deploy action expects
+    environment:
+      name: github-pages
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+      - name: List repo (debug)
+        run: ls -la
 
-      - name: Upload entire repository as artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Prepare public directory
+        run: |
+          set -euo pipefail
+          rm -rf public || true
+          mkdir public
+          # copy your site root (or assets contents) into public
+          if [ -d "assets" ]; then
+            cp -r assets/* public/
+          else
+            cp -r ./* public/ || true
+          fi
+          echo "public contents:"
+          ls -la public
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
+        # If your org requires explicit enablement, you can add: with: enablement: all
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          path: .
+          path: public
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
