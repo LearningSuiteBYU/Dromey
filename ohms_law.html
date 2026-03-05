@@ -11,6 +11,12 @@
   <script>
     const ruffle = window.RufflePlayer.newest();
     const player = ruffle.createPlayer();
+        
+    // set fixed pixel size
+    player.style.width = '800px';
+    player.style.height = '600px';
+    player.style.display = 'block';
+    
     document.getElementById("player").appendChild(player);
     player.load("assets/ohms law.swf");
   </script>
