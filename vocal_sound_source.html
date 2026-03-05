@@ -11,6 +11,12 @@
   <script>
     const ruffle = window.RufflePlayer.newest();
     const player = ruffle.createPlayer();
+    
+    // set fixed pixel size
+    player.style.width = '960px';
+    player.style.height = '720px';
+    player.style.display = 'block';
+    
     document.getElementById("player").appendChild(player);
     player.load("assets/vocal_sound_source.swf");
   </script>
