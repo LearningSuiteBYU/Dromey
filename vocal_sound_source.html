@@ -4,6 +4,36 @@
   <meta charset="utf-8"/>
   <title>Flash via Ruffle CDN</title>
   <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+  <style>
+  body {
+    margin: 0;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  .swf-container {
+    width: 90%;              /* small screens */
+    max-width: 1200px;       /* limit max growth */
+    aspect-ratio: 4 / 3;     /* change if your SWF is 16/9 */
+    background: black;
+  }
+
+  .swf-container > * {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+  }
+
+  /* Larger screens */
+  @media (min-width: 1024px) {
+    .swf-container {
+      width: 70%;
+    }
+  }
+</style>
 </head>
 <body>
   <div id="player"></div>
@@ -11,11 +41,6 @@
   <script>
     const ruffle = window.RufflePlayer.newest();
     const player = ruffle.createPlayer();
-    
-    // set fixed pixel size
-    player.style.width = '960px';
-    player.style.height = '720px';
-    player.style.display = 'block';
     
     document.getElementById("player").appendChild(player);
     player.load("assets/vocal_sound_source.swf");
