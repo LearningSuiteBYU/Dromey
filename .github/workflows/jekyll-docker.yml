@@ -1,20 +1,48 @@
-name: Jekyll site CI
-
+name: Deploy to GitHub Pages
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
+
+# grant the workflow the permissions it needs to publish
+permissions:
+  pages: write
+  contents: read
 
 jobs:
-  build:
-
+  build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the site in the jekyll/builder container
-      run: |
-        docker run \
-        -v ${{ github.workspace }}:/srv/jekyll -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
-        jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare public directory (copy top-level items)
+        run: |
+          set -euo pipefail
+          echo "Working directory: $(pwd)"
+          echo "Repo contents:"
+          ls -la
+
+          rm -rf public || true
+          mkdir public
+
+          # Copy top-level items except public, .git, and .github
+          shopt -s dotglob nullglob
+          for item in ./*; do
+            name=$(basename "$item")
+            if [[ "$name" == "public" || "$name" == ".git" || "$name" == ".github" ]]; then
+              continue
+            fi
+            cp -r "$item" public/
+          done
+
+          echo "public contents:"
+          ls -la public
+
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
