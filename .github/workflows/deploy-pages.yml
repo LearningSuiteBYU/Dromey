@@ -1,51 +1,47 @@
-name: Deploy Static Site to GitHub Pages
+name: Deploy static site to gh-pages
 
 on:
   push:
     branches: [ main ]
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write   # allow pushing the gh-pages branch
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
-    # <-- THIS IS THE CRITICAL LINE the deploy action expects
-    environment:
-      name: github-pages
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: List repo (debug)
-        run: ls -la
 
       - name: Prepare public directory
         run: |
           set -euo pipefail
           rm -rf public || true
-          mkdir public
-          # copy your site root (or assets contents) into public
+          mkdir -p public
+
+          # If you keep the site under assets/, copy its contents
           if [ -d "assets" ]; then
             cp -r assets/* public/
           else
-            cp -r ./* public/ || true
+            # otherwise copy top-level files (exclude .git and .github)
+            shopt -s dotglob nullglob
+            for item in ./*; do
+              name=$(basename "$item")
+              if [[ "$name" == ".git" || "$name" == ".github" || "$name" == "public" ]]; then
+                continue
+              fi
+              cp -r "$item" public/
+            done
           fi
+
           echo "public contents:"
           ls -la public
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v4
-        # If your org requires explicit enablement, you can add: with: enablement: all
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v1
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: public
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          # optional:
+          # commit_message: "Deploy site: ${{ github.sha }}"
